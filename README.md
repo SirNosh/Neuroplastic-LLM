@@ -272,11 +272,10 @@ To prevent reward gaming in Tree-of-Thought optimization, the system uses a sepa
 
 The evaluation model uses both model-generated metrics (coherence, relevance, quality) and BERTScore for semantic similarity assessment. This multi-faceted evaluation approach helps produce more reliable and diverse optimizations.
 
-### Prioritized Replay Buffer (Placeholder)
-- *Concept: Efficient storage and sampling of training experiences.*
-- *Concept: Importance-based prioritization.*
-- *Concept: Deduplication and quality filtering.*
-- *(Note: ReplayBuffer component is not yet implemented.)*
+### Prioritized Replay Buffer
+- Efficient storage and sampling of training experiences.
+- Importance-based prioritization.
+- Deduplication and quality filtering.
 
 ## 📊 Monitoring and Observability
 
