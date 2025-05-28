@@ -28,7 +28,7 @@ A production-ready neuroplastic large language model deployment system based on 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   API Gateway   │────│  Serving Engine │────│  Online Trainer │
-│   (FastAPI)     │    │     (vLLM)      │    │  (Multi-Modal)  │
+│   (FastAPI)     │    │     (vLLM)      │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
          │                       │                       │
