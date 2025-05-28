@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  serving-engine:
+    build:
+      context: .
+      dockerfile: docker/serving.Dockerfile
+    depends_on:
+      - kafka
+    environment:
+      - CONFIG_PATH=config/base.yaml
+      - CUDA_VISIBLE_DEVICES=0
+    ports:
+      - "8000:8000"
+    command: ["python", "main.py", "serve", "--config", "config/base.yaml", "--host", "0.0.0.0", "--port", "8000"]
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    depends_on:
+      - serving-engine
+      - kafka
+    environment:
+      - CONFIG_PATH=config/base.yaml
+      - CUDA_VISIBLE_DEVICES=0
+    ports:
+      - "8080:8080"
+    command: ["python", "main.py", "serve", "--config", "config/base.yaml", "--host", "0.0.0.0", "--port", "8080"]
+
+  ppo-trainer:
+    build:
+      context: .
+      dockerfile: docker/training.Dockerfile
+    depends_on:
+      - kafka
+      - redis
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - CONFIG_PATH=config/base.yaml
+
+  hot-reload:
+    build:
+      context: .
+      dockerfile: docker/hotreload.Dockerfile
+    depends_on:
+      - serving-engine
+    environment:
+      - CONFIG_PATH=config/base.yaml 

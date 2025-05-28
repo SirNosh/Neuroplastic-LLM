@@ -1,0 +1,54 @@
+name: Neuroplastic-Qwen-CICD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+      - name: Run tests
+        run: pytest -v
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Docker images
+        run: |
+          docker build -f docker/serving.Dockerfile -t your-registry/neuroplastic-qwen:serving .
+          docker build -f docker/api.Dockerfile -t your-registry/neuroplastic-qwen:api .
+          docker build -f docker/training.Dockerfile -t your-registry/neuroplastic-qwen:training .
+          docker build -f docker/hotreload.Dockerfile -t your-registry/neuroplastic-qwen:hotreload .
+      - name: Docker Login
+        run: echo "Logging in to Docker Hub or your container registry..."
+      - name: Push Docker images
+        run: |
+          echo "Pushing images to your-registry..."
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy via kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.27.1'
+      - name: Apply manifests
+        run: |
+          kubectl apply -f k8s/
+          kubectl rollout status deployment/neuroplastic-qwen 

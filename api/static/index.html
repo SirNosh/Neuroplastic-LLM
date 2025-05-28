@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuroplastic Qwen Chat</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <h1>Neuroplastic Qwen</h1>
+            </div>
+            <div class="header-controls">
+                <a href="/static/health.html" class="nav-link" title="System Health"><i class="fas fa-heartbeat"></i></a>
+                <button id="clear-chat" title="Clear chat history"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message system">
+                <div class="message-content">
+                    <p>Welcome to Neuroplastic Qwen! How can I help you today?</p>
+                </div>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <textarea id="user-input" placeholder="Type your message here..." rows="1"></textarea>
+            <button id="send-button" title="Send message">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+        <div class="chat-footer">
+            <div class="model-info">
+                <span>Model: Qwen 2.5</span>
+                <span id="lora-indicator" title="Current LoRA adapter">LoRA: None</span>
+            </div>
+            <div class="settings">
+                <div class="setting">
+                    <label for="temperature">Temperature:</label>
+                    <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7">
+                    <span id="temperature-value">0.7</span>
+                </div>
+                <div class="setting">
+                    <label for="max-tokens">Max Tokens:</label>
+                    <select id="max-tokens">
+                        <option value="256">256</option>
+                        <option value="512" selected>512</option>
+                        <option value="1024">1024</option>
+                        <option value="2048">2048</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html> 

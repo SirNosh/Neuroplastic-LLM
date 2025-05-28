@@ -1,0 +1,265 @@
+# Neuroplastic Qwen Configuration
+# This configuration file defines all settings for the neuroplastic LLM deployment system
+
+# Model configuration
+model:
+  name: "Qwen/Qwen2.5-7B-Instruct"
+  model_path: "/models/qwen2.5-7b-instruct"
+  tokenizer_path: "/models/qwen2.5-7b-instruct"
+  device: "auto"  # auto, cuda, cpu
+  dtype: "bf16"  # fp32, bf16, fp16 (vLLM handles precision based on model, this is target if applicable)
+  max_model_len: 8192
+  trust_remote_code: true
+  tensor_parallel_size: 1
+  gpu_memory_utilization: 0.9
+  
+  # Model-specific settings
+  temperature: 0.8
+  top_p: 0.95
+  top_k: 50
+  repetition_penalty: 1.1
+
+# vLLM engine configuration
+serving:
+  engine: "vllm"
+  host: "0.0.0.0"
+  port: 8000
+  gpu_memory_utilization: 0.9
+  max_num_batched_tokens: 8192
+  max_num_seqs: 256
+  max_paddings: 256
+  block_size: 16
+  swap_space: 4  # GB
+  cpu_offload_gb: 0
+  enforce_eager: false
+  disable_custom_all_reduce: false
+  enable_lora: true
+  max_lora_rank: 64
+  max_loras: 32
+  
+  # Scheduling settings
+  max_waiting_time: 0.0
+  max_batch_size: 512
+  scheduling_policy: "fcfs"  # fcfs, priority
+  
+  # Memory optimization
+  enable_prefix_caching: true
+  disable_sliding_window: false
+
+# API configuration
+api:
+  host: "0.0.0.0"
+  port: 8080
+  log_level: "info"
+  enable_tracing: true
+  max_request_size: 10485760 # 10MB
+  workers: 1
+  
+  # CORS settings
+  cors_enabled: true
+  cors_origins: ["*"]
+  cors_methods: ["GET", "POST", "PUT", "DELETE"]
+  cors_headers: ["*"]
+  
+  # Rate limiting
+  rate_limit_enabled: true
+  rate_limit_requests_per_minute: 60
+  rate_limit_burst: 10
+  
+  # Authentication (optional)
+  auth_enabled: false
+  api_keys: []
+
+# Kafka configuration for streaming and events
+kafka:
+  bootstrap_servers: ["localhost:9092"]
+  client_id: "neuroplastic-qwen"
+  consumer_group: "qwen-consumer-group"
+  auto_offset_reset: "latest"
+  compression_type: "gzip"
+  
+  # Topic configuration
+  topics:
+    traces: "qwen-traces"
+    feedback: "qwen-feedback"
+    ewc_samples: "qwen-ewc-samples"
+    tot_traces: "qwen-tot-traces"
+    metrics: "qwen-metrics"
+    alerts: "qwen-alerts"
+  
+  # Producer settings
+  producer:
+    acks: "all"
+    retries: 3
+    batch_size: 16384
+    linger_ms: 10
+    max_in_flight_requests_per_connection: 1
+    enable_idempotence: true
+  
+  # Consumer settings
+  consumer:
+    max_poll_records: 100
+    max_poll_interval_ms: 300000
+    session_timeout_ms: 30000
+    heartbeat_interval_ms: 10000
+
+# Storage configuration (S3-compatible)
+storage:
+  type: "s3"  # s3, minio, gcs, azure
+  bucket: "neuroplastic-qwen-storage"
+  region: "us-west-2"
+  prefix: "neuroplastic_data"
+  endpoint_url: null
+  aws_access_key_id: "${AWS_ACCESS_KEY_ID}"
+  aws_secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
+  local_cache_dir: "./cache/storage_manager"
+  
+  # Cache settings
+  cache_max_size_gb: 50
+  cache_cleanup_interval_seconds: 3600
+  cache_max_age_hours: 24
+
+# Training configuration
+training:
+  general:
+    enabled: true
+    learning_rate: 5e-5
+    max_queue_size: 1000
+    queue_timeout_seconds: 30.0
+    max_workers: 2
+    positive_feedback_threshold: 0.7
+    negative_feedback_threshold: 0.3
+    lora_adaptation_threshold: 0.8
+    replay_optimization_interval_seconds: 3600
+    ewc_adjustment_interval_seconds: 1800
+    lora_cleanup_interval_seconds: 7200
+    metrics_log_interval_seconds: 300
+
+  ewc:
+    lambda_init: 0.4
+    lambda_max: 10000.0
+    lambda_min: 0.01
+    lambda_decay: 0.95
+    lambda_adjustment_interval: 3600.0
+    fisher_samples: 1000
+    fisher_batch_size: 8
+    consolidation_threshold: 0.1
+    importance_threshold: 1e-6
+    max_stored_tasks: 10
+
+  lora:
+    rank: 16
+    alpha: 32
+    dropout: 0.05
+    target_modules: ["q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+    max_adapters: 10
+    adapter_merge_threshold: 0.9
+    min_samples_for_adaptation: 5
+    dynamic_rank_enabled: true
+    rank_min: 4
+    rank_max: 64
+
+  rank1:
+    max_slices_per_layer: 100
+    update_threshold: 10
+    importance_decay: 0.95
+
+  ppo:
+    schedule: "0 4 * * *"
+    batch_size: 8
+    learning_rate: 1e-5
+    mini_batch_size: 2
+    gradient_accumulation_steps: 2
+    target_kl: 0.06
+
+  tot:
+    enabled: true
+    max_depth: 3
+    branching_factor: 3
+    evaluation_samples: 5
+    improvement_threshold: 0.1
+    max_optimization_time_seconds: 120
+    beam_width: 5
+    search_strategy: "bfs"
+    pruning_enabled: true
+    pruning_threshold: 0.05
+    evaluation_metrics: ["coherence", "relevance", "quality"]
+    metric_weights: [0.4, 0.3, 0.3]
+
+  replay_buffer:
+    max_size: 10000
+    sampling_strategy: "prioritized"
+    priority_alpha: 0.6
+    priority_beta: 0.4
+    importance_sampling: true
+    deduplication_enabled: true
+    quality_filtering_enabled: true
+    min_quality_score: 0.5
+
+# Hot-reload Controller Configuration
+hot_reload:
+  check_interval: 60
+  download_timeout: 300
+  validation_enabled: true
+  rollback_on_failure: true
+
+# Monitoring and logging
+monitoring:
+  log_level: "INFO"
+  structured_logging: true
+  metrics_enabled: true
+  metrics_interval: 60
+  prometheus_enabled: true
+  prometheus_port: 9090
+  health_check_interval: 30
+
+# General Application Logging (for structlog)
+logging:
+  level: "INFO"
+  format: "json"
+  file: "logs/neuroplastic-qwen.log"
+  max_size: "100MB"
+  backup_count: 5
+
+# Security settings
+security:
+  tls_enabled: false
+  cert_file: ""
+  key_file: ""
+  input_validation_enabled: true
+  max_input_length: 4096
+  content_filtering_enabled: false
+  
+  # Authentication
+  auth_enabled: false
+  jwt_secret: "${JWT_SECRET}"
+  jwt_expiry: 3600
+  
+  # Rate limiting
+  ddos_protection_enabled: true
+  max_requests_per_ip: 100
+  rate_limit_window: 3600
+
+# Development and debugging
+development:
+  debug_mode: false
+  hot_reload_server: false
+
+# Feature flags
+features:
+  neuroplastic_learning_enabled: true
+  online_ewc_enabled: true
+  online_adaptation: true
+  ewc_regularization: true
+  lora_adaptation: true
+  tot_optimization: true
+  replay_buffer: true
+  distributed_training: false
+  model_compression: false
+  quantization: false
+  
+  # Experimental features
+  experimental_features_enabled: false
+  adaptive_batching: false
+  dynamic_scheduling: false
+  federated_learning: false 

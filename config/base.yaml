@@ -1,0 +1,163 @@
+model:
+  name: "Qwen/Qwen2.5-7B-Instruct"
+  # model_path: "/models/qwen2.5-7b-instruct" # Keep model_path commented or remove if not used directly by loader
+  # tokenizer_path: "/models/qwen2.5-7b-instruct" # Keep tokenizer_path commented
+  device: "auto" # Changed from "cuda" to "auto" as in sample
+  dtype: "bf16" # Changed from "bfloat16"
+  max_model_len: 131072 # Set to match Qwen 2.5 7B max sequence length
+  trust_remote_code: true
+  # tensor_parallel_size: 1 # Added from sample, if applicable
+  # gpu_memory_utilization: 0.9 # Redundant, already in serving config
+
+serving:
+  engine: "vllm"  # or "sglang"
+  host: "0.0.0.0"
+  port: 8000 # This is for the vLLM engine itself if run separately
+  # workers: 1 # vLLM handles internal worker management based on tensor_parallel_size
+  gpu_memory_utilization: 0.9 # 90% memory utilization as recommended for Qwen 2.5
+  max_num_batched_tokens: 131072 # Match with max model context length
+  max_num_seqs: 256
+  enable_lora: true
+  max_lora_rank: 32 # Updated to align with our lora config
+  max_loras: 32
+  # block_size: 16 # Added from sample, if vLLM supports this directly
+  # swap_space: 4 # Added from sample, if vLLM supports this
+  # enforce_eager: false # Added from sample
+
+api:
+  host: "0.0.0.0"
+  port: 8080 # This is for the FastAPI gateway
+  log_level: "info"
+  enable_tracing: true
+  max_request_size: 10485760 # 10MB, from sample
+
+storage:
+  type: "s3"
+  bucket: "qwen-neuroplastic-store"
+  region: "us-west-2"
+  prefix: "deltas" # Base prefix for this system's data
+  endpoint_url: null # For MinIO: "http://localhost:9000"
+  aws_access_key_id: null # Set via environment variable
+  aws_secret_access_key: null # Set via environment variable
+  local_cache_dir: "./cache" # from sample
+  cache_max_size_gb: 50 # from sample
+  cache_cleanup_interval_seconds: 3600 # from sample
+  cache_max_age_hours: 24 # from sample
+
+
+kafka:
+  bootstrap_servers: ["localhost:9092"]
+  client_id: "neuroplastic-qwen" # Added from sample
+  consumer_group: "neuroplastic-qwen"
+  auto_offset_reset: "latest"
+  compression_type: "gzip" # Added from sample
+  topics:
+    traces: "qwen-traces"
+    feedback: "qwen-feedback"
+    ewc_samples: "qwen-ewc-samples"
+    tot_traces: "qwen-tot-traces"
+    metrics: "qwen-metrics" # Added
+  # Producer/Consumer settings from sample can be added if needed by KafkaManager at init
+  # producer:
+  #   acks: "all"
+  #   retries: 3
+  # consumer:
+  #   max_poll_records: 100
+
+redis:
+  host: "localhost"
+  port: 6379
+  db: 0
+  password: null
+
+training:
+  general:
+    enabled: true
+    learning_rate: 5e-5
+    max_queue_size: 1000
+    queue_timeout_seconds: 30.0
+    max_workers: 2
+    positive_feedback_threshold: 0.7
+    negative_feedback_threshold: 0.3
+    lora_adaptation_threshold: 0.8 # Threshold for creating new LoRA adapters
+    replay_optimization_interval_seconds: 3600
+    ewc_adjustment_interval_seconds: 1800 # Matches EWCTrainer's default, can be overridden
+    lora_cleanup_interval_seconds: 7200 # Interval for cleaning up unused LoRA adapters
+    metrics_log_interval_seconds: 300
+
+  ewc:
+    # EWCTrainer specific config
+    lambda_init: 0.4
+    lambda_max: 10000.0
+    lambda_min: 0.01
+    lambda_decay: 0.95
+    lambda_adjustment_interval: 3600.0 # Corresponds to ewc_adjustment_interval_seconds in GeneralTrainingConfig
+    fisher_samples: 1000
+    fisher_batch_size: 8
+    consolidation_threshold: 0.1
+    importance_threshold: 1e-6
+    max_stored_tasks: 10
+    # Old fields from base.yaml, now optional in dataclass, can be removed or kept if a use case exists
+    # fisher_update_interval: 300
+    target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+
+  lora: # Added for LoRATrainer
+    rank: 4
+    alpha: 16
+    dropout: 0.05
+    target_modules: ["q_proj", "v_proj", "k_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+    max_adapters: 10
+    min_samples_for_adaptation: 3
+    adapter_merge_threshold: 0.9
+    dynamic_rank_enabled: true
+    rank_min: 4
+    rank_max: 32
+
+  tot: # Tree-of-Thought optimizer
+    enabled: true
+    max_depth: 3
+    branching_factor: 3
+    evaluation_samples: 5
+    improvement_threshold: 0.1
+    max_optimization_time_seconds: 120
+    beam_width: 5
+    search_strategy: "bfs"
+    pruning_enabled: true
+    pruning_threshold: 0.05
+    evaluation_metrics: ["coherence", "relevance", "quality"]
+    metric_weights: [0.4, 0.3, 0.3]
+
+  rank1: # Rank1Sum trainer configuration
+    max_slices_per_layer: 100
+    update_threshold: 10
+    importance_decay: 0.95
+
+  ppo: # PPO RLHF configuration
+    schedule: "0 4 * * *"
+    batch_size: 8
+    learning_rate: 1e-5
+    mini_batch_size: 2
+    gradient_accumulation_steps: 2
+    target_kl: 0.06
+
+hot_reload:
+  check_interval: 60
+  download_timeout: 300
+  validation_enabled: true
+  rollback_on_failure: true
+
+monitoring:
+  prometheus_port: 9090
+  health_check_interval: 30
+  # performance_threshold: 1.0 # This was vague, removed. Alerts can be more specific.
+  log_level: "INFO" # Moved from general logging, as this is monitoring specific
+  structured_logging: true # Added
+  metrics_enabled: true # Added
+  metrics_interval: 60 # Added
+
+logging: # General application logging
+  level: "INFO"
+  format: "json" # console or json
+  file: "logs/neuroplastic-qwen.log"
+  max_size: "100MB"
+  backup_count: 5 

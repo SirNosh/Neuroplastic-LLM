@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neuroplastic-qwen
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: neuroplastic-qwen
+  template:
+    metadata:
+      labels:
+        app: neuroplastic-qwen
+    spec:
+      containers:
+        - name: serving-engine
+          image: your-registry/neuroplastic-qwen:serving
+          ports:
+            - containerPort: 8000
+          env:
+            - name: CONFIG_PATH
+              value: /config/base.yaml
+            - name: CUDA_VISIBLE_DEVICES
+              value: "0"
+          volumeMounts:
+            - name: config-vol
+              mountPath: /config
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+              
+        - name: api-gateway
+          image: your-registry/neuroplastic-qwen:api
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SERVING_URL
+              value: http://localhost:8000
+            - name: CONFIG_PATH
+              value: /config/base.yaml
+          volumeMounts:
+            - name: config-vol
+              mountPath: /config
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+              
+        - name: hot-reload
+          image: your-registry/neuroplastic-qwen:hotreload
+          env:
+            - name: CONFIG_PATH
+              value: /config/base.yaml
+          volumeMounts:
+            - name: config-vol
+              mountPath: /config
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "512Mi"
+              
+      volumes:
+        - name: config-vol
+          configMap:
+            name: qwen-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: neuroplastic-qwen-service
+spec:
+  selector:
+    app: neuroplastic-qwen
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qwen-config
+data:
+  base.yaml: |
+    # Configuration will be populated during deployment 

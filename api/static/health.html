@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuroplastic Qwen - System Health</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="health.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="health-container">
+        <div class="health-header">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <h1>Neuroplastic Qwen - System Health</h1>
+            </div>
+            <div class="header-controls">
+                <button id="refresh-data" title="Refresh health data"><i class="fas fa-sync-alt"></i></button>
+                <a href="/static/index.html" class="nav-link" title="Back to chat"><i class="fas fa-comment"></i></a>
+            </div>
+        </div>
+
+        <div class="health-content">
+            <div class="health-card system-status">
+                <div class="card-header">
+                    <h2><i class="fas fa-heartbeat"></i> System Status</h2>
+                </div>
+                <div class="card-content">
+                    <div class="status-indicator">
+                        <div class="status-icon" id="status-icon">
+                            <i class="fas fa-circle-notch fa-spin"></i>
+                        </div>
+                        <div class="status-text" id="status-text">Loading...</div>
+                    </div>
+                    <div class="status-details">
+                        <div class="status-item">
+                            <span class="label">Model:</span>
+                            <span class="value" id="model-name">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Engine:</span>
+                            <span class="value" id="engine-type">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Model Loaded:</span>
+                            <span class="value" id="model-loaded">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Last Check:</span>
+                            <span class="value" id="last-check">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="health-card lora-status">
+                <div class="card-header">
+                    <h2><i class="fas fa-plug"></i> LoRA Adapters</h2>
+                </div>
+                <div class="card-content">
+                    <div class="lora-count">
+                        <span class="count" id="lora-count">-</span>
+                        <span class="label">active adapters</span>
+                    </div>
+                    <div class="lora-list" id="lora-list">
+                        <div class="loading-placeholder">
+                            <i class="fas fa-circle-notch fa-spin"></i> Loading adapters...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="health-card performance">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-line"></i> Performance Metrics</h2>
+                </div>
+                <div class="card-content">
+                    <div class="metric-row">
+                        <div class="metric-item">
+                            <div class="metric-value" id="total-requests">-</div>
+                            <div class="metric-label">Total Requests</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value" id="avg-latency">-</div>
+                            <div class="metric-label">Avg. Latency (s)</div>
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-item">
+                            <div class="metric-value" id="tokens-per-second">-</div>
+                            <div class="metric-label">Tokens/Second</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value" id="memory-usage">-</div>
+                            <div class="metric-label">GPU Memory</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="health-card test-generation">
+                <div class="card-header">
+                    <h2><i class="fas fa-vial"></i> Test Generation</h2>
+                    <button id="run-test" class="test-button">Run Test</button>
+                </div>
+                <div class="card-content">
+                    <div class="test-result" id="test-result">
+                        <div class="test-placeholder">
+                            Click "Run Test" to perform a test generation
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="health.js"></script>
+</body>
+</html> 
