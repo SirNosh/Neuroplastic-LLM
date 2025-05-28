@@ -326,10 +326,3 @@ The evaluation model uses both model-generated metrics (coherence, relevance, qu
 - [LoRA: Low-Rank Adaptation](https://arxiv.org/abs/2106.09685)
 - [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)
 
-
-## 📄 License
-
-This project is licensed under the Apache License 2.0.
-
-
-**Built with ❤️ for the future of adaptive AI systems** 
