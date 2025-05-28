@@ -304,67 +304,6 @@ The evaluation model uses both model-generated metrics (coherence, relevance, qu
 - External service connectivity
 - Resource utilization thresholds
 
-## 🔒 Security
-
-### Authentication
-- JWT-based authentication (optional)
-- API key management
-- Role-based access control
-
-### Input Validation
-- Content length limits
-- Prompt sanitization
-- Rate limiting per client
-
-### Network Security
-- TLS/HTTPS support
-- CORS configuration
-- DDoS protection
-
-## 🧪 Testing
-
-*(Note: The specific test structure below is a template. Actual test commands may vary based on project evolution.)*
-
-### Unit Tests
-```bash
-pytest tests/unit/ -v # (If unit tests are structured here)
-```
-
-### Integration Tests
-```bash
-pytest tests/integration/ -v # (If integration tests are structured here)
-```
-
-### Performance Tests
-```bash
-# Performance test setup and commands would be defined here if available.
-# pytest tests/performance/ -v --benchmark-only
-```
-
-### End-to-End Tests
-```bash
-# E2E test setup and commands would be defined here if available.
-# pytest tests/e2e/ -v
-```
-
-## 🚀 Deployment
-
-### Production Checklist
-
-- [ ] Configure production environment variables
-- [ ] Set up Kafka cluster
-- [ ] Configure S3 storage
-- [ ] Set up monitoring and alerting
-- [ ] Configure load balancing
-- [ ] Set up SSL certificates
-- [ ] Configure backup and disaster recovery
-
-### Scaling Considerations
-
-- **Horizontal Scaling**: Multiple API server instances behind load balancer
-- **GPU Scaling**: Multi-GPU support via tensor parallelism
-- **Storage Scaling**: Distributed storage for large model artifacts
-- **Kafka Scaling**: Partitioned topics for high throughput
 
 ### Performance Optimization
 
@@ -373,33 +312,6 @@ pytest tests/integration/ -v # (If integration tests are structured here)
 - **Training Optimization**: Gradient accumulation and mixed precision
 - **Infrastructure Optimization**: Resource allocation and scheduling
 
-## 🤝 Contributing
-
-### Development Setup
-
-1. **Fork and clone the repository**
-2. **Install development dependencies**
-   ```bash
-   pip install -r requirements-dev.txt
-   pre-commit install
-   ```
-3. **Run tests**
-   ```bash
-   make test
-   ```
-4. **Submit pull request**
-
-### Code Style
-- Follow PEP 8 guidelines
-- Use Black for code formatting
-- Use MyPy for type checking
-- Add comprehensive docstrings
-
-### Testing Guidelines
-- Write tests for all new features
-- Maintain >90% code coverage
-- Include integration tests for API endpoints
-- Add performance benchmarks for critical paths
 
 ## 📚 Documentation
 
@@ -415,43 +327,6 @@ pytest tests/integration/ -v # (If integration tests are structured here)
 - [LoRA: Low-Rank Adaptation](https://arxiv.org/abs/2106.09685)
 - [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)
 
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**Model Loading Errors**
-```bash
-# Check CUDA availability
-python -c "import torch; print(torch.cuda.is_available()) "
-
-# Verify configuration (model name, paths if used locally)
-python main.py validate_config --config config/config.yaml
-```
-
-**Kafka Connection Issues**
-```bash
-# Test Kafka connectivity (replace localhost:9092 if different)
-# Ensure your Kafka broker is running and accessible.
-# Using a tool like kcat (kafkacat) or a simple Kafka client can help.
-# Example with kafka-python (install if needed: pip install kafka-python)
-python -c "from kafka.admin import KafkaAdminClient; client = KafkaAdminClient(bootstrap_servers='localhost:9092'); print(client.list_topics())"
-
-# If using kafka-tools from Kafka installation:
-# kafka-topics.sh --list --bootstrap-server localhost:9092
-```
-
-**Training Not Starting / No Feedback Processing**
-```bash
-# Check training configuration in config.yaml (training.general.enabled, etc.)
-python main.py validate_config --config config/config.yaml
-
-# Monitor application logs (default: logs/neuroplastic-qwen.log)
-# Look for messages from OnlineTrainer, EWCTrainer, KafkaManager
-tail -f logs/neuroplastic-qwen.log
-
-# Check Kafka feedback topic for incoming messages
-# (Using a Kafka consumer tool for the feedback topic)
-```
 
 ## 📄 License
 
